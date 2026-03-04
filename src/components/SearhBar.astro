@@ -1,0 +1,185 @@
+---
+import productos from "@data/rawData.json";
+
+// Solo productos públicos
+const productosPublicos = productos.filter((p) => p.estado === "Público");
+---
+
+<div
+  class="w-full p-4 bg-primary sticky top-0 z-30 flex justify-center"
+  data-productos={JSON.stringify(productosPublicos)}
+  id="searchWrapper"
+>
+  <div class="w-full max-w-2xl relative">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Buscar Rack (ej: tv movible techo)"
+      class="w-full text-text p-2 md:p-4 rounded-2xl border border-gost-hover
+             focus:outline-none focus:ring-2 focus:ring-secondary
+             transition shadow-sm"
+    />
+
+    <button
+      id="clearSearch"
+      class="absolute right-5 top-1/2 -translate-y-1/2 text-text/50
+             hover:text-gost-hover transition focus:outline-none hidden
+             text-xl font-medium"
+      aria-label="Limpiar búsqueda"
+    >
+      x
+    </button>
+
+    <div id="results" class="absolute left-0 top-full w-full mt-2 z-40"></div>
+  </div>
+</div>
+
+<script>
+  const wrapper = document.getElementById("searchWrapper");
+  const productos = wrapper
+    ? JSON.parse(wrapper.dataset.productos || "[]")
+    : [];
+
+  const input = document.getElementById("searchInput");
+  const clearButton = document.getElementById("clearSearch");
+  const results = document.getElementById("results");
+
+  const MAX_RESULTS = 5;
+
+  function normalize(text: any) {
+    return (
+      text
+        ?.toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") || ""
+    );
+  }
+
+  // Función para mostrar/ocultar el botón de limpiar
+  function toggleClearButton() {
+    if (input && clearButton) {
+      if ((input as HTMLInputElement).value.length > 0) {
+        clearButton.classList.remove("hidden");
+      } else {
+        clearButton.classList.add("hidden");
+      }
+    }
+  }
+
+  // Limpiar el input
+  function clearSearch() {
+    if (input) {
+      (input as HTMLInputElement).value = "";
+      input.dispatchEvent(new Event("input"));
+      toggleClearButton();
+      input.focus();
+    }
+  }
+
+  if (input) {
+    // Evento para mostrar/ocultar el botón mientras se escribe
+    input.addEventListener("input", (e) => {
+      toggleClearButton();
+
+      const target = e.target as HTMLInputElement | null;
+      const query = normalize(target ? target.value : "");
+
+      if (!results) return;
+      results.innerHTML = "";
+      if (!query) return;
+
+      const filtrados = productos
+        .filter(
+          (producto: {
+            version: any;
+            modelo: any;
+            capacidad: any;
+            id: any;
+          }) => {
+            const searchable = [
+              producto.version,
+              producto.modelo,
+              producto.capacidad,
+              producto.id,
+            ]
+              .map(normalize)
+              .join(" ");
+
+            const palabras = query.split(" ").filter(Boolean);
+
+            return palabras.some((palabra: string) =>
+              searchable.includes(palabra),
+            );
+          },
+        )
+        .slice(0, MAX_RESULTS);
+
+      if (filtrados.length === 0) {
+        results.innerHTML =
+          '<p class="text-gray-500 text-sm">No se encontraron resultados</p>';
+        return;
+      }
+
+      filtrados.forEach(
+        (producto: {
+          id: any;
+          categoria: any;
+          version: any;
+          capacidad: any;
+          tipo: any;
+          modelo: any;
+          color: any;
+          bateria: any;
+          estado: any;
+          precio: any;
+        }) => {
+          const link = document.createElement("a");
+
+          link.href = `/racks/${producto.id}`;
+          link.className =
+            "block p-4 rounded-2xl bg-gost shadow hover:bg-gost-hover hover:shadow-lg transition-all duration-300 my-2";
+
+          link.innerHTML = `
+      <div class="font-semibold text-lg text-text">
+        ${"Rack " + "de " + producto.categoria + " " + producto.tipo}
+      </div>
+
+      <div class="text-sm text-text-secondary mt-1">
+        ${producto.id}
+      </div>
+
+      <div class="mt-2 font-bold text-text-feature">
+        $${producto.precio}
+      </div>
+    `;
+
+          results.appendChild(link);
+        },
+      );
+    });
+
+    // Verificar estado inicial (por si hay valor precargado)
+    toggleClearButton();
+  }
+
+  if (clearButton) {
+    clearButton.addEventListener("click", clearSearch);
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as Node | null;
+
+    if (!wrapper || !results) return;
+
+    if (!wrapper.contains(target)) {
+      results.innerHTML = "";
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && results) {
+      results.innerHTML = "";
+    }
+  });
+</script>

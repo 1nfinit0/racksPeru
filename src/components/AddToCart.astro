@@ -1,0 +1,89 @@
+---
+
+const { item } = Astro.props;
+
+const code = "00" + Math.random().toString(36).substring(5, 8).toUpperCase();
+
+const phone = "51922917150";
+
+const slug = item.id.replace(/ /g, "%20");
+
+const message = [
+  `📦 Pedido:`,
+  `> ${code}`,
+  "",
+  "Hola 👋",
+  "",
+  `Quiero el Rack \`${item.id} ${item.categoria} ${item.tipo}\``,
+  "",
+  `*S/. ${item.precio}*`,
+  "",
+  "¿Podrían darme más información?",
+  `https://idwin.vercel.app/iphone/${slug}`,
+].join("\n");
+
+const whatsappUrl =
+  `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+---
+<div class="sticky bottom-0 z-50 w-full max-w-xl">
+  <div class="w-full mx-auto backdrop-blur-lg shadow-xl rounded-2xl
+              p-2 md:p-4">
+
+    <div class="flex items-center gap-3">
+
+      <!-- Cantidad
+      <div class="flex items-center border rounded-xl overflow-hidden bg-white">
+
+        <button
+          type="button"
+          aria-label="Disminuir cantidad"
+          class="px-3 py-2 text-lg font-semibold
+                 hover:bg-neutral-100
+                 active:scale-95 transition"
+        >
+          −
+        </button>
+
+        <span
+          aria-live="polite"
+          class="px-4 min-w-[2ch] text-center font-medium"
+        >
+          1
+        </span>
+
+        <button
+          type="button"
+          aria-label="Aumentar cantidad"
+          class="px-3 py-2 text-lg font-semibold
+                 hover:bg-neutral-100
+                 active:scale-95 transition"
+        >
+          +
+        </button>
+
+      </div> -->
+
+      <!-- Botón principal -->
+      <a
+        class="flex w-full items-center justify-center
+               bg-linear-to-r from-text-feature to-secondary
+               text-text font-semibold
+               py-3 px-6 rounded-xl
+               shadow-md
+               hover:shadow-lg
+               active:scale-[0.98]
+               transition-all
+               cursor-pointer"
+        type="button"
+        aria-label="Pedir producto por WhatsApp"
+        href={whatsappUrl}
+      >
+        Pídelo aquí <div class="imagen w-6 h-6 ml-2">
+          <img src="/icons/whatsapp.svg" alt="WhatssApp">
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
+

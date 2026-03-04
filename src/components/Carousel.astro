@@ -1,0 +1,192 @@
+---
+interface Props {
+  images: string[];
+}
+
+const { images } = Astro.props;
+---
+
+<div class="carousel relative w-full max-w-lg mx-auto overflow-hidden shadow-lg">
+  <div class="carousel-track flex transition-transform duration-300 ease-out">
+    {images.map((src, index) => (
+      <img
+        src={src}
+        alt={`Imagen ${index + 1}`}
+        class="w-full shrink-0 object-cover aspect-square select-none"
+        draggable="false"
+      />
+    ))}
+  </div>
+
+  <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+    {images.map((_, i) => (
+      <button
+        class="dot w-3 h-3 rounded-full bg-neutral-400/60 transition-colors"
+        data-index={i}
+      ></button>
+    ))}
+  </div>
+</div>
+
+<script>
+function initCarousel() {
+  document.querySelectorAll(".carousel").forEach(carousel => {
+    const track = carousel.querySelector(".carousel-track");
+    const dots = carousel.querySelectorAll(".dot");
+    
+    if (!track || dots.length === 0) return;
+
+    let index = 0;
+    const total = dots.length;
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
+    let startTime = 0;
+
+    // ---- update UI
+    function update() {
+      if (!track) return;
+      (track as HTMLElement).style.transform = `translateX(-${index * 100}%)`;
+      dots.forEach(d => d.classList.remove("bg-neutral-900"));
+      dots[index]?.classList.add("bg-neutral-900");
+    }
+
+    // ---- dots click
+    dots.forEach(dot => {
+      dot.addEventListener("click", e => {
+        const target = e.target as HTMLElement;
+        if (target) {
+          index = Number(target.dataset.index);
+          update();
+        }
+      });
+    });
+
+    // =====================
+    // SWIPE MEJORADO
+    // =====================
+
+    // Evento para iniciar el arrastre
+    function onPointerDown(e: Event) {
+      dragging = true;
+      startX = e instanceof TouchEvent ? e.touches[0]?.clientX : (e as MouseEvent).clientX;
+      currentX = 0;
+      startTime = Date.now();
+      if (track) (track as HTMLElement).style.transition = "none";
+      (carousel as HTMLElement).style.cursor = "grabbing";
+    }
+
+    // Evento para mover durante el arrastre
+    function onPointerMove(e: Event) {
+      if (!dragging || !track) return;
+      
+      let clientX: number;
+      if (e instanceof MouseEvent) {
+        clientX = e.clientX;
+      } else if (e instanceof TouchEvent) {
+        clientX = e.touches[0]?.clientX ?? 0;
+      } else {
+        clientX = 0;
+      }
+      currentX = clientX - startX;
+      
+      // Limitar el desplazamiento según la posición actual
+      let maxDragRight = 0;
+      let maxDragLeft = 0;
+      
+      if (index === 0) {
+        // Primera imagen: solo se puede arrastrar a la derecha (negativo)
+        maxDragRight = (carousel as HTMLElement).offsetWidth * 0.5; // Límite para ir a la siguiente
+        currentX = Math.max(-maxDragRight, currentX);
+      } else if (index === total - 1) {
+        // Última imagen: solo se puede arrastrar a la izquierda (positivo)
+        maxDragLeft = (carousel as HTMLElement).offsetWidth * 0.5; // Límite para volver
+        currentX = Math.min(maxDragLeft, currentX);
+      } else {
+        // Imágenes intermedias: se puede arrastrar en ambas direcciones
+        const maxDrag = (carousel as HTMLElement).offsetWidth * 0.5;
+        currentX = Math.max(-maxDrag, Math.min(maxDrag, currentX));
+      }
+      
+      (track as HTMLElement).style.transform = `translateX(calc(-${index * 100}% + ${currentX}px))`;
+    }
+
+    // Evento para finalizar el arrastre
+    function onPointerUp() {
+      if (!dragging) return;
+      dragging = false;
+      (carousel as HTMLElement).style.cursor = "";
+      (track as HTMLElement).style.transition = "transform 0.3s ease-out";
+
+      const threshold = (carousel as HTMLElement).offsetWidth * 0.15; // 15% del ancho
+      const elapsedTime = Date.now() - startTime;
+      const velocity = Math.abs(currentX) / Math.max(elapsedTime, 1);
+      const velocityThreshold = 0.5; // Velocidad mínima para cambiar
+
+      // Decidir si cambiar de imagen
+      let shouldChange = false;
+      let direction = 0; // -1: izquierda, 1: derecha, 0: no cambiar
+
+      if (currentX < -threshold) {
+        // Deslizamiento a la derecha suficiente
+        shouldChange = true;
+        direction = -1;
+      } else if (currentX > threshold) {
+        // Deslizamiento a la izquierda suficiente
+        shouldChange = true;
+        direction = 1;
+      } else if (velocity > velocityThreshold) {
+        // Velocidad alta, cambiar según dirección
+        shouldChange = true;
+        direction = currentX < 0 ? -1 : 1;
+      }
+
+      // Aplicar el cambio si corresponde
+      if (shouldChange) {
+        if (direction === -1 && index < total - 1) {
+          index++; // Ir a la siguiente imagen
+        } else if (direction === 1 && index > 0) {
+          index--; // Volver a la anterior
+        }
+      }
+
+      // Reset y actualizar
+      currentX = 0;
+      update();
+    }
+
+    // Eventos para mouse
+    track.addEventListener("mousedown", onPointerDown);
+    window.addEventListener("mousemove", onPointerMove);
+    window.addEventListener("mouseup", onPointerUp);
+
+    // Eventos para touch
+    track.addEventListener("touchstart", onPointerDown, { passive: true });
+    window.addEventListener("touchmove", onPointerMove, { passive: true });
+    window.addEventListener("touchend", onPointerUp);
+
+    // Prevenir comportamiento por defecto en imágenes
+    track.querySelectorAll("img").forEach(img => {
+      img.addEventListener("dragstart", (e) => e.preventDefault());
+    });
+
+    // Inicializar
+    update();
+  });
+}
+
+// Inicialización segura
+function safeInit() {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCarousel);
+  } else {
+    initCarousel();
+  }
+}
+
+// Inicializar cuando Astro cargue la página
+if (typeof window !== "undefined") {
+  safeInit();
+  document.addEventListener("astro:page-load", initCarousel);
+}
+</script>

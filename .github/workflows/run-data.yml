@@ -1,0 +1,49 @@
+name: Run data script
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Clonar repo
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2️⃣ Python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3️⃣ Instalar dependencias
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/data/pyRequirements.txt
+
+
+      # 4️⃣ Crear .env.local desde secrets
+      - name: Create env file
+        run: |
+          echo "SPREADSHEET_LINK=${{ secrets.SPREADSHEET_LINK }}" > src/data/.env.local
+
+
+      # 5️⃣ Ejecutar script
+      - name: Run script
+        run: python src/data/getData.py
+
+      # 6️⃣ Commit y push si hubo cambios
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add .
+          git diff --cached --quiet || git commit -m "Auto update data"
+          git push

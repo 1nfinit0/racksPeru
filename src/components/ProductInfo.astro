@@ -1,0 +1,130 @@
+---
+const { item } = Astro.props;
+---
+
+<div class="w-full max-w-lg flex flex-col">
+
+  <p class="text-3xl mt-4 m-2 text-text-feature font-bold">Rack de {item.categoria} {item.tipo}</p>
+
+  <span class="bg-gost p-1 text-xs text-text w-fit rounded-lg ml-5 border border-gray-500 md:m-5">📖 Antes: S/. {item.precioAntes}</span>
+
+  <div class="flex items-center justify-between mx-4 mt-2 mb-4">
+    <p class="text-3xl font-bold text-text-feature text-shadow-black">S/. {item.precio}</p>
+    <button
+  id="shareBtn"
+  class="px-4 py-2 rounded-xl bg-secondary text-text font-medium
+         transition-all duration-300 active:scale-55"
+>
+  Compartir
+</button>
+
+  </div>
+  <div class="w-full">
+    <p class="text-text text-sm mb-4">
+      {item.descripcion}
+    </p>
+  </div>
+
+  <!-- <div class="w-full mb-6">
+  <div class="flex flex-wrap items-center justify-center gap-3">
+
+    <div class="spec-card">
+      <img src="/icons/storage.svg" alt="SSD" />
+      <span class="label">Capacidad</span>
+      <span class="value">{item.capacidad}</span>
+    </div>
+
+    <div class="spec-card">
+      <img src="/icons/heart.svg" alt="Estado" />
+      <span class="label">Estado</span>
+      <span class="value">{item.estado}</span>
+    </div>
+
+    <div class="spec-card">
+      <img src="/icons/batery.svg" alt="Batería" />
+      <span class="label">Batería</span>
+      <span class="value">{item.bateria}</span>
+    </div>
+
+    <div class="spec-card">
+      <img src="/icons/processor.svg" alt="Procesador" />
+      <span class="label">Chip</span>
+      <span class="value">{item.CPU}</span>
+    </div>
+
+    <div class="spec-card">
+      <img src="/icons/screen.svg" alt="Pantalla" />
+      <span class="label">Pantalla</span>
+      <span class="value">{item.pantalla}</span>
+    </div>
+
+    <div class="spec-card">
+      <img src="/icons/camer.svg" alt="Cámara" />
+      <span class="label">Foto</span>
+      <span class="value">{item.camaraFoto}</span>
+    </div>
+
+    <div class="spec-card">
+      <img src="/icons/video.svg" alt="Video" />
+      <span class="label">Video</span>
+      <span class="value">{item.camaraVideo}</span>
+    </div>
+
+  </div>
+</div> -->
+  
+  <span class="bg-green-200/20 p-1 text-xs text-text w-fit rounded-lg mx-5 border border-green-400 m-1">🚆 Producto con instalación</span>
+
+  <span class="bg-yellow-100/30 p-1 text-xs text-text w-fit rounded-lg mx-5 border border-yellow-300 m-1">🚚 Soporte para todo el Perú</span>
+</div>
+
+
+<script>
+  const btn = document.getElementById("shareBtn");
+
+  async function copyLink() {
+    const url = window.location.href;
+
+    // Método moderno
+    try {
+      await navigator.clipboard.writeText(url);
+      return true;
+    } catch {
+      // Fallback clásico
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = url;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  btn?.addEventListener("click", async () => {
+    const ok = await copyLink();
+
+    if (ok) {
+      btn.textContent = "Enlace copiado ✓";
+      btn.classList.add("bg-green-600", "scale-110");
+    } else {
+      btn.textContent = "No se pudo copiar";
+      btn.classList.add("bg-red-600");
+    }
+
+    setTimeout(() => {
+      btn.textContent = "Compartir";
+      btn.classList.remove("bg-green-600","bg-red-600","scale-110");
+    }, 1800);
+  });
+</script>
+
+

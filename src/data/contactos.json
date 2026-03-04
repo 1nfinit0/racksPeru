@@ -1,0 +1,14 @@
+[
+  {
+    "tipo": "email",
+    "valor": "racksdelperu@gmail.com"
+  },
+  {
+    "tipo": "telefono",
+    "valor": "+51 987654321"
+  },
+  {
+    "tipo": "direccion",
+    "valor": "Av. Principal 123, Lima, Perú"
+  }
+]

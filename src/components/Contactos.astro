@@ -1,0 +1,8 @@
+---
+import contactos from '@data/contactos.json';
+---
+<div class="w-full flex flex-wrap justify-center items-center gap-2 py-2" >
+  {contactos.map((contacto) => (
+      <p class="text-sm text-text rounded-xl border border-gost bg-secondary p-2">{contacto.valor}</p>
+  ))}
+</div>

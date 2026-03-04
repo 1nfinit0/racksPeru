@@ -1,0 +1,59 @@
+---
+import products from "@data/rawData.json";
+import Layout from "@layouts/Layout.astro";
+import Logo from "@components/Logo.astro";
+import ThemeSwitch from "@components/ThemeSwich.astro";
+import SearchBar from "@components/SearhBar.astro";
+import Carousel from "@components/Carousel.astro";
+import ProductInfo from "@components/ProductInfo.astro";
+import ProductVideos from "@components/ProductVideos.astro";
+import AddToCart from "@components/AddToCart.astro";
+
+import { getAllImages } from "@libs/getAllImages";
+import { getAllVideos } from "@libs/getAllVideos";
+import { getFirstImage } from "@libs/getFirstImage";
+
+export async function getStaticPaths() {
+  return products.map((producto) => ({
+    params: {
+      slug: producto.id,
+    },
+    props: {
+      producto,
+    },
+  }));
+}
+
+const { producto } = Astro.props;
+
+const images = getAllImages(producto.id);
+const videos = getAllVideos(producto.id);
+---
+
+<Layout 
+  title={`Rack ${producto.categoria} ${producto.tipo} - ${producto.producto} | Racks del Perú`}
+  description={`A solo S/. ${String(producto.precio)}`}
+  image={`https://idwin.vercel.app/${getFirstImage(producto.id)}`}
+  url={Astro.url.href}
+  type="product"
+  siteName="Racks del Perú"
+  locale="es_ES"
+  twitterCard="summary_large_image"
+  twitterCreator="@1nfinit0"
+  twitterSite="@1nfinit0">
+  <header
+    class="w-full flex px-2 md:px-10 justify-between items-center bg-primary sticky top-0 z-50"
+  >
+    <Logo width="w-32 md:w-52" />
+    <SearchBar />
+    <ThemeSwitch />
+  </header>
+  <main class="w-full px-4 bg-primary flex flex-col items-center">
+    <div class="w-full max-w-6xl flex flex-col items-center py-8">
+      <Carousel images={images} />
+      <ProductInfo item={producto} />
+      <ProductVideos videos={videos} />
+      <AddToCart item={producto} />
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,58 @@
+---
+import products from '@data/rawData.json';
+import { getFirstImage } from '@libs/getFirstImage';
+
+const categorias = [...new Set(products.map((p) => p.categoria))];
+
+const productsByCategory = categorias.reduce((acc, categoria) => {
+
+  acc[categoria] = products.filter((p) => p.categoria === categoria);
+
+  return acc;
+
+}, {} as Record<string, any[]>);
+---
+<div class="w-full max-w-7xl flex flex-col">
+   {categorias.map((categoria) => (
+    <ul>
+      <li class="text-shadow-white text-2xl md:text-3xl font-light mx-5 mb-3 text-text">{categoria}</li>
+      <div id={`row-${categoria.replace(/\s+/g,'-')}`} class="product-row w-full max-w-7xl flex overflow-x-auto scroll-smooth gap-4 pb-4 px-2 mb-6">
+
+        {productsByCategory[categoria]
+        .filter(item => item.estado == 'Público')
+        .map((item) => (
+          <a href={`/racks/${item.id}`} class="card max-w-44 min-w-44 min-h-64 rounded-lg shadow-lg flex flex-col items-center justify-between bg-linear-to-b from-secondary-600 to-primary/80">
+            <img src={getFirstImage(item.id)} alt={item.producto} class="w-full aspect-square object-cover rounded-lg"  />
+            <div class="info h-full px-2 flex flex-col items-center justify-between py-2 align-middle gap-2">
+              <p class="text-sm font-light text-text">{item.producto}</p>
+              <p class="text-sm text-text-secondary">Rack de {item.categoria} {item.tipo}</p>
+              <p class="text-text-feature font-bold">S/. {item.precio.toFixed(2)}</p>              
+            </div>
+          </a>
+        ))}
+
+      </div>
+    </ul>
+   ))}
+</div>
+
+<script define:vars={{ categorias }}>
+  function shuffle(container) {
+    const items = Array.from(container.children);
+
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      container.appendChild(items[j]);
+      items.splice(j, 1);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    categorias.forEach(cat => {
+      const safe = cat.replace(/\s+/g,'-');
+      const el = document.getElementById(`row-${safe}`);
+      if (el) shuffle(el);
+    });
+  });
+</script>
+

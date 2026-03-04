@@ -1,0 +1,114 @@
+---
+interface Props {
+  videos: string[];
+}
+
+const { videos } = Astro.props;
+---
+<div class="tokWrapper w-full max-w-lg mx-5 mt-6 mb-10 flex flex-col gap-4 px-5">
+  <p class="text-lg font-light text-text">Más sobre tu producto:</p>
+  {videos.map((video, i) => (
+    <div class="videoContainer relative flex items-center justify-center">
+      <video 
+      id={`video-${i}`}
+      muted
+      playsinline
+      loop
+      class="shadow-lg m-5 rounded-2xl cursor-pointer"
+    >
+      <source src={video} type="video/mp4" />
+      Tu navegador no soporta el elemento de video.
+    </video>
+    <div class="play text-center text-4xl text-gray-200 absolute bottom-12 left-4 cursor-pointer" data-video={`video-${i}`}>
+      ▶️
+    </div>
+    <div class="mute text-center text-5xl text-gray-500 absolute bottom-12 right-2 cursor-pointer" data-video={`video-${i}`}>
+      🔇
+    </div>
+    </div>
+  ))}
+</div>
+
+<script>
+  let initialized = false;
+  function initVideos() {
+    if (initialized) return;
+    initialized = true;
+  document.querySelectorAll("video").forEach(video => {
+    video.addEventListener("click", () => {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+  });
+
+  document.querySelectorAll(".play").forEach(playButton => {
+  const videoId = (playButton as HTMLElement).dataset.video;
+  if (!videoId) return;
+
+  const video = document.getElementById(videoId) as HTMLVideoElement;
+  if (!video) return;
+
+  // Click solo controla reproducción
+  playButton.addEventListener("click", () => {
+    video.paused ? video.play() : video.pause();
+  });
+
+  // Sincronización REAL
+  video.addEventListener("play", () => {
+    playButton.textContent = "⏸️";
+  });
+
+  video.addEventListener("pause", () => {
+    playButton.textContent = "▶️";
+  });
+});
+
+
+  document.querySelectorAll(".mute").forEach(muteButton => {
+    muteButton.addEventListener("click", () => {
+      const videoId = (muteButton as HTMLElement).dataset.video;
+      if (!videoId) return;
+      const video = document.getElementById(videoId) as HTMLVideoElement;
+
+      if (video) {
+        if (video.muted) {
+          video.muted = false;
+          muteButton.textContent = "🔊";
+        } else {
+          video.muted = true;
+          muteButton.textContent = "🔇";
+        }
+      }
+    });
+  });
+
+  // Autoplay solo cuando el video está en vista
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target as HTMLVideoElement;
+      if (entry.isIntersecting) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+  }, { threshold: 0.5 }); // 50% visible
+
+  document.querySelectorAll("video").forEach(video => {
+    observer.observe(video);
+  });
+  }
+
+  function safeInit() {
+  requestAnimationFrame(() => {
+    initVideos();
+  });
+}
+
+document.addEventListener("DOMContentLoaded", safeInit);
+document.addEventListener("astro:page-load", safeInit);
+
+</script>

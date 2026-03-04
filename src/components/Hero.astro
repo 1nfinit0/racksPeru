@@ -1,0 +1,264 @@
+---
+// /src/data/banners.ts
+import { getBanners } from "@data/banners";
+
+const bannersList = getBanners();
+
+const phone = "51922917150";
+
+const message = [
+  "Hola 👋",
+  "",
+  `Quisiera más información sobre los racks que ofrecen.`,
+  "",
+  "",
+  `https://idwin.vercel.app/iphone/`,
+].join("\n");
+
+const whatsappUrl =
+  `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+---
+
+<div class="banner-carousel relative w-full overflow-hidden max-w-7xl mx-auto">
+  <div class="slides-container relative w-full h-64 md:h-96">
+    {
+  bannersList.map((banner, index) => (
+    <div
+      class={`slide ${index === 0 ? "active" : ""} absolute inset-0 w-full h-full transition-opacity duration-700 ease-in-out`}
+  data-slide={index}
+    >
+      {banner.linkUrl ? (
+        <a href={banner.linkUrl} class="relative block w-full h-full ">
+          <img
+            src={banner.imageUrl}
+            alt={banner.altText}
+            class="absolute w-full h-full object-cover pointer-events-none"
+          />
+
+          <div class="absolute inset-0 bg-(--gradient-main) opacity-60"></div>
+
+          <div class="absolute bottom-12 left-12 max-w-2xl z-10 text-text">
+            {banner.altText && (
+              <h2 class="text-4xl md:text-5xl font-bold mb-4 text-text">
+                {banner.altText}
+              </h2>
+            )}
+            {banner.text && (
+              <p class="text-lg md:text-xl text-text-secondary">
+                {banner.text}
+              </p>
+            )}
+          </div>
+        </a>
+      ) : (
+        <div class="relative w-full h-full flex items-end justify-start pl-4 md:pl-12 pb-8">
+          <img
+            src={banner.imageUrl}
+            alt={banner.altText}
+            class="absolute aspect-square w-1/2 md:w-1/3 object-cover pointer-events-none right-0 bottom-0"
+          />
+
+          <a href={whatsappUrl} class="w-fit bg-green-600 rounded z-10 text-white flex flex-row justify-between items-center cursor-pointer">
+            <img src="/icons/whatsapp.svg" alt="WhatsApp" class="w-5 h-5 inline-block ml-2" /> <p class="p-2 text-sm md:text-lg">Contacta aquí</p> 
+          </a>
+
+          <div class="absolute inset-0 bg-(--gradient-main) opacity-60"></div>
+
+          <div class="absolute top-4 md:top-12 left-2 md:left-12 max-w-xl z-10 text-text">
+            {banner.altText && (
+              <h2 class="text-3xl md:text-5xl font-bold mb-4 text-shadow-lg">
+                {banner.altText}
+              </h2>
+            )}
+            {banner.text && (
+              <p class="text-md md:text-xl text-text-secondary">
+                {banner.text}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  ))
+}
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+    {
+      bannersList.map((_, index) => (
+        <button
+          class={`dot ${index === 0 ? "active" : ""} w-2 h-2 rounded-full bg-text-secondary/40 transition-all duration-300`}
+  data-slide={index}
+        />
+      ))
+    }
+  </div>
+</div>
+
+<style>
+.slide {
+  opacity: 0;
+  z-index: 0;
+}
+
+.slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.dot.active {
+  background: var(--text);
+  transform: scale(1.25);
+}
+</style>
+
+<script>
+  // Estado del carrusel
+  let currentSlide = 0;
+  let slides: NodeListOf<Element> = document.querySelectorAll(".slide");
+  let dots: NodeListOf<Element> = document.querySelectorAll(".dot");
+  let totalSlides = 0;
+
+  // Variables para el deslizamiento
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+  let autoPlayInterval: ReturnType<typeof setInterval> | null = null;
+
+  // Inicialización
+  function initCarousel() {
+    const carousel = document.querySelector(".banner-carousel");
+    const slidesContainer = document.querySelector(".slides-container");
+
+    if (!carousel || !slidesContainer) return;
+
+    slides = document.querySelectorAll(".slide");
+    dots = document.querySelectorAll(".dot");
+    totalSlides = slides.length;
+
+    // Detener auto-play anterior si existe
+    if (autoPlayInterval) {
+      clearInterval(autoPlayInterval);
+    }
+
+    // Mostrar slide actual
+    function showSlide(index: number) {
+      // Asegurar que el índice esté dentro de los límites (bucle infinito)
+      currentSlide = (index + totalSlides) % totalSlides;
+
+      // Quita active de todos
+      slides.forEach((slide) => slide.classList.remove("active"));
+      dots.forEach((dot) => dot.classList.remove("active"));
+
+      // Añade active al actual
+      slides[currentSlide].classList.add("active");
+      dots[currentSlide].classList.add("active");
+    }
+
+    // Navegación simple
+    function nextSlide() {
+      showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      showSlide(currentSlide - 1);
+    }
+
+    // Eventos de dots
+    dots.forEach((dot, index) => {
+      dot.addEventListener("click", () => {
+        showSlide(index);
+        resetAutoPlay();
+      });
+    });
+
+    // =====================
+    // DESLIZAMIENTO SIMPLE
+    // =====================
+
+    function handleStart(e: Event) {
+      if (e instanceof MouseEvent) {
+        startX = e.clientX;
+      } else if (e instanceof TouchEvent) {
+        startX = e.touches[0].clientX;
+      }
+      currentX = 0;
+      isDragging = true;
+
+      // Detener auto-play temporalmente
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+      }
+    }
+
+    function handleMove(e: Event) {
+      if (!isDragging) return;
+      if (e instanceof MouseEvent) {
+        currentX = e.clientX - startX;
+      } else if (e instanceof TouchEvent) {
+        currentX = e.touches[0].clientX - startX;
+      }
+    }
+
+    function handleEnd(e?: Event) {
+      if (!isDragging) return;
+      isDragging = false;
+
+      // Decidir si cambiar de slide
+      const threshold = window.innerWidth * 0.1; // 10% de la pantalla
+
+      if (currentX < -threshold) {
+        // Deslizamiento a la derecha: siguiente
+        nextSlide();
+      } else if (currentX > threshold) {
+        // Deslizamiento a la izquierda: anterior
+        prevSlide();
+      }
+
+      // Reiniciar auto-play
+      resetAutoPlay();
+      currentX = 0;
+    }
+
+    // Eventos de mouse
+    slidesContainer.addEventListener("mousedown", handleStart as EventListener);
+    document.addEventListener("mousemove", handleMove as EventListener);
+    document.addEventListener("mouseup", handleEnd as EventListener);
+
+    // Eventos táctiles
+    slidesContainer.addEventListener(
+      "touchstart",
+      handleStart as EventListener,
+      { passive: true },
+    );
+    document.addEventListener("touchmove", handleMove as EventListener, {
+      passive: true,
+    });
+    document.addEventListener("touchend", handleEnd as EventListener);
+
+    // Prevenir arrastre de imágenes
+    slidesContainer.querySelectorAll("img").forEach((img) => {
+      img.addEventListener("dragstart", (e) => e.preventDefault());
+    });
+
+    // Auto-play simple
+    function startAutoPlay() {
+      autoPlayInterval = setInterval(nextSlide, 4000);
+    }
+
+    function resetAutoPlay() {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+      }
+      startAutoPlay();
+    }
+
+    // Inicializar
+    showSlide(currentSlide);
+    startAutoPlay();
+  }
+
+  // Inicialización segura
+  document.addEventListener("DOMContentLoaded", initCarousel);
+  document.addEventListener("astro:page-load", initCarousel);
+</script>

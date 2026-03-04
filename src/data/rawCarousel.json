@@ -1,0 +1,37 @@
+[
+  {
+    "nombre": "iPhone 13",
+    "descripcion": "Imagen del logo de IDwin",
+    "src": "/models/Phone.glb",
+    "alttext": "13",
+    "index": 1
+  },
+  {
+    "nombre": "iPhone 14",
+    "descripcion": "Imagen del logo de IDwin",
+    "src": "/models/Phone1.glb",
+    "alttext": "14",
+    "index": 2
+  },
+  {
+    "nombre": "iPhone 15",
+    "descripcion": "Video de ejemplo",
+    "src": "/models/Phone2.glb",
+    "alttext": "15",
+    "index": 3
+  },
+  {
+    "nombre": "iPhone 16",
+    "descripcion": "Contenido de texto",
+    "src": "/models/Phone3.glb",
+    "alttext": "16",
+    "index": 4
+  },
+  {
+    "nombre": "iPhone 17",
+    "descripcion": "Modelo GLB de ejemplo",
+    "src": "/models/Phone4.glb",
+    "alttext": "17",
+    "index": 5
+  }
+]
