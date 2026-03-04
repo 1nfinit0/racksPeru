@@ -159,7 +159,7 @@ def main():
                 2
             )
 
-            time.sleep(60)  # Zzz    
+            time.sleep(1)  # Zzz    
 
             print(f"Videos descargados para {item['id']}")
             
