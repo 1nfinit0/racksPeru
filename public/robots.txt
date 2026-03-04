@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+
+# Archivos y directorios permitidos
+Allow: /racks/
+
+# Bloquear recursos innecesarios para indexación
+Disallow: /api/
+Disallow: /*.json$
+Disallow: /*.csv$
+
+# Sitemap
+Sitemap: https://racksperu.vercel.app/sitemap.xml
+
+# Configuración de rastreo
+Crawl-delay: 0
+
+# Reglas específicas para bots conocidos
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
