@@ -33,7 +33,7 @@ const videos = getAllVideos(producto.id);
 <Layout 
   title={`Rack ${producto.categoria} ${producto.tipo} - ${producto.producto} | Racks del Perú`}
   description={`A solo S/. ${String(producto.precio)}`}
-  image={`https://idwin.vercel.app/${getFirstImage(producto.id)}`}
+  image={`https://racksperu.vercel.app/${getFirstImage(producto.id)}`}
   url={Astro.url.href}
   type="product"
   siteName="Racks del Perú"
